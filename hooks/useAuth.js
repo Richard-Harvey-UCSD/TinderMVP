@@ -44,6 +44,14 @@ export const AuthProvider = ({ children }) => {
     []
   );
 
+  const logout = () => {
+    setLoading(true);
+
+    signOut(auth)
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
+  }
+
   const signInWithGoogle = async() => {
     setLoading(true);
 
@@ -69,6 +77,7 @@ export const AuthProvider = ({ children }) => {
             loading,
             error,
             signInWithGoogle,
+            logout,
         }}
     >
       {!loadingInitial && children}
