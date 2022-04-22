@@ -1,19 +1,32 @@
-import { Button, View, Text } from 'react-native'
-import React from 'react'
+import { Button, View, Text, ImageBackground } from 'react-native'
+import React, { useLayoutEffect } from 'react'
 import useAuth from '../hooks/useAuth'
+import { useNavigation } from '@react-navigation/native';
+import tw from "twrnc";
 
 const LoginScreen = () => {
 
-    const { signInWithGoogle } = useAuth()
-    //console.log(user)
+  const { signInWithGoogle, loading } = useAuth();
+  const navigation = useNavigation();
+    
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    });
+  }, []);  
 
   return (
     <View>
-      <Text>Login to the app</Text>
-      <Button title='login' onPress={signInWithGoogle} />
+      <ImageBackground
+        resizeMode="cover"
+        style={tw`flex-1`}
+        sources={{ uri: "https://tinder.com/static/tinder.png" }}
+        >
+          <Text>Sign in & get swiping</Text>
+        </ImageBackground>
     </View>
   )
   
 }
 
-export default LoginScreen
+export default LoginScreen;
