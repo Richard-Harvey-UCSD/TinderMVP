@@ -10,20 +10,22 @@ const LoginScreen = () => {
   const navigation = useNavigation();
     
   useLayoutEffect(() => {
-    navigation.setOptions({
+    navigation.setOptions({ 
       headerShown: false,
     });
   }, []);  
 
   return (
     <View>
+      
       <ImageBackground
         resizeMode="cover"
-        style={tw`flex-1`}
+        style={tw`justify-center items-center`}
         sources={{ uri: "https://tinder.com/static/tinder.png" }}
         >
           <Text>Sign in & get swiping</Text>
         </ImageBackground>
+      
     </View>
   )
   

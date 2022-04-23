@@ -14,10 +14,6 @@ import {
   signOut
 } from '@firebase/auth';
 import { auth } from '../firebase';
-//import { useEffect } from 'react/cjs/react.production.min';
-//import { useState } from 'react/cjs/react.production.min';
-//import { useContext } from 'react/cjs/react.production.min';
-//import { createContext } from 'react/cjs/react.production.min';
 
 const AuthContext = createContext({});
 
