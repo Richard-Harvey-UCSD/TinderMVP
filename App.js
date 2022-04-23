@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import tw from 'twrnc';
 import { LogBox } from 'react-native';
-//LogBox.ignoreAllLogs();
+LogBox.ignoreAllLogs();
 import { AuthProvider } from './hooks/useAuth';
 import StackNavigator from './StackNavigator';
 import {TailwindProvider} from 'tailwind-rn';
