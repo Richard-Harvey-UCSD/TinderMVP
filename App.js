@@ -6,12 +6,12 @@ import { LogBox } from 'react-native';
 LogBox.ignoreAllLogs();
 import { AuthProvider } from './hooks/useAuth';
 import StackNavigator from './StackNavigator';
-import {TailwindProvider} from 'tailwind-rn';
-import utilities from './tailwind.json';
+//import {TailwindProvider} from 'tailwind-rn';
+//import utilities from './tailwind.json';
 
 export default function App() {
   return (
-    <TailwindProvider utilities={utilities}>
+   // <TailwindProvider utilities={utilities}>
       <NavigationContainer>
         {/* HOC - Higher Order Component */}
         <AuthProvider>
@@ -19,6 +19,6 @@ export default function App() {
           <StackNavigator />
         </AuthProvider>
       </NavigationContainer>
-    </TailwindProvider>
+   // </TailwindProvider>
   );
 }

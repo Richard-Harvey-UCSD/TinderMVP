@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native';
-import React, { 
-  useEffect, 
-  useState, 
-  createContext, 
-  useContext, 
-  useMemo 
+import React, {
+  useEffect,
+  useState,
+  createContext,
+  useContext,
+  useMemo
 } from 'react';
 import * as Google from 'expo-google-app-auth';
 import {
@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(
-    () => 
+    () =>
       onAuthStateChanged(auth, (user) => {
         if (user) {
           // logged in...
@@ -54,22 +54,22 @@ export const AuthProvider = ({ children }) => {
       .finally(() => setLoading(false));
   }
 
-  const signInWithGoogle = async() => {
+  const signInWithGoogle = async () => {
     setLoading(true);
 
     await Google.logInAsync(config).then(async (logInResult) => {
-      if(logInResult.type === 'success') {
+      if (logInResult.type === 'success') {
         // login...
         const { idToken, accessToken } = logInResult;
         const credential = GoogleAuthProvider.credential(idToken, accessToken);
-      
+
         await signInWithCredential(auth, credential);
       }
 
       return Promise.reject();
     })
-    .catch((error) => setError(error))
-    .finally(() => setLoading(false));
+      .catch((error) => setError(error))
+      .finally(() => setLoading(false));
   }
 
   const memoedValue = useMemo(() => ({
@@ -88,5 +88,5 @@ export const AuthProvider = ({ children }) => {
 }
 
 export default function useAuth() {
-    return useContext(AuthContext);
+  return useContext(AuthContext);
 }
