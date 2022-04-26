@@ -14,8 +14,9 @@ import useAuth from '../hooks/useAuth';
 import tw from 'twrnc';
 import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, onSnapshot, query, serverTimestamp, setDoc, where } from "firebase/firestore";
 import { db } from "../firebase";
+import generateId from "../lib/generateId";
 
 const DUMMY_DATA = [
   {
@@ -71,31 +72,97 @@ const HomeScreen = () => {
     let unsub;
 
     const fetchCards = async () => {
-      unsub = onSnapshot(collection(db, "users"), (snapshot) => {
-        setProfiles(
-          snapshot.docs.filter(doc => doc.id !== user.uid).map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-        );
-      });
+      const passes = await getDocs(
+        collection(db, "users", user.uid, "passes")).
+        then((snapshot) => snapshot.docs.map((doc) => doc.id));
+
+      const likes = await getDocs(
+        collection(db, "users", user.uid, "likes"))
+        .then((snapshot) => snapshot.docs.map((doc) => doc.id));
+
+      const passedUserIds = passes.length > 0 ? passes : ["test"];
+      const likedUserIds = likes.length > 0 ? likes : ["test"];
+
+      unsub = onSnapshot(
+        query(
+          collection(db, "users"),
+          where("id", "not-in", [...passedUserIds, ...likedUserIds])
+        ),
+        (snapshot) => {
+          setProfiles(
+            snapshot.docs
+              .filter((doc) => doc.id !== user.uid)
+              .map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }))
+          );
+        }
+      );
     };
 
     fetchCards();
     return unsub;
-  }, []);
+  }, [db]);
 
-  const swipeLeft = async() => {
+  const swipeLeft = async (cardIndex) => {
+    if (!profiles[cardIndex]) return;
 
-  }
+    const userSwiped = profiles[cardIndex];
+    console.log(`You swiped NOPE on ${userSwiped.displayName}`);
 
-  const swipeRight = async() => {
-    
-  }
+    setDoc(doc(db, "users", user.uid, "passes", userSwiped.id), userSwiped);
+  };
 
-  const swipeTop = async() => {
-    
-  }
+  const swipeRight = async (cardIndex) => {
+    if (!profiles[cardIndex]) return;
+
+    const userSwiped = profiles[cardIndex];
+    const loggedInProfile = await (await getDoc(doc(db, "users", user.uid))).data();
+
+    // Check if the user swiped on you...
+    // Done on client-side for demo (considered a breach)
+    // Should be done on server-side for production
+    getDoc(doc(db, "users", userSwiped.id, "likes", user.uid)).then(
+      (documentSnapshot) => {
+        if (documentSnapshot.exists()) {
+          // user has matched with you before you matched with them...
+          // creat a MATCH!
+          console.log(`Don't fuck this up, you matched with ${userSwiped.displayName}`);
+          setDoc(doc(db, "users", user.uid, "likes", userSwiped.id), userSwiped);
+
+          // CREATE A MATCH!
+          setDoc(doc(db, "matches", generateId(user.uid, userSwiped.id)), {
+            users: {
+              [user.uid]: loggedInProfile,
+              [userSwiped.id]: userSwiped
+            },
+            usersMatched: [user.uid, userSwiped.id],
+            timeStamp: serverTimestamp(),
+          });
+
+          navigation.navigate("Match", {
+            loggedInProfile,
+            userSwiped,
+          });
+
+        } else {
+          // user has liked as first interaction between the two or didn't get swiped on...
+          console.log(`You swiped LIKE on ${userSwiped.displayName}`);
+          setDoc(doc(db, "users", user.uid, "likes", userSwiped.id), userSwiped);
+        }
+      }
+    );
+  };
+
+  const swipeTop = async (cardIndex) => {
+    if (!profiles[cardIndex]) return;
+
+    const userSwiped = profiles[cardIndex];
+    console.log(`You swiped LIKE on ${userSwiped.displayName}`);
+
+    setDoc(doc(db, "users", user.uid, "super likes", userSwiped.id), userSwiped);
+  };
 
   //console.log(profiles)
 

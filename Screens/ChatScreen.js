@@ -1,13 +1,16 @@
-import { View, Text } from 'react-native';
-import React from 'react';
-import tw from 'twrnc';
+import { View, Text, SafeAreaView, Platform } from "react-native";
+import React from "react";
+import tw from "twrnc";
+import Header from "../components/Header";
+import ChatList from "../components/ChatList";
 
 const ChatScreen = () => {
   return (
-    <View style={tw`py-90 px-30`}>
-      <Text>I am the ChatScreen</Text>
-    </View>
-  )
-}
+    <SafeAreaView style={[tw``, Platform.OS === "android" ? tw`mt-10` : tw`mt-0`]}>
+      <Header title="Chat" callEnabled />
+      <ChatList />
+    </SafeAreaView>
+  );
+};
 
-export default ChatScreen
+export default ChatScreen;
