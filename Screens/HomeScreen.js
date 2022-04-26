@@ -8,12 +8,14 @@ import {
   Platform,
   StyleSheet
 } from 'react-native';
-import React, { useLayoutEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import useAuth from '../hooks/useAuth';
 import tw from 'twrnc';
 import { AntDesign, Entypo, Ionicons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
 
 const DUMMY_DATA = [
   {
@@ -46,14 +48,56 @@ const HomeScreen = () => {
 
   const navigation = useNavigation();
   const { user, logout } = useAuth();
-  const swipeRef = useRef
-    (null);
+  const [profiles, setProfiles] = useState([]);
+  const swipeRef = useRef(null);
 
   /* useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, []); */
+
+  useLayoutEffect(
+    () =>
+      onSnapshot(doc(db, "users", user.uid), (snapshot) => {
+        if (!snapshot.exists()) {
+          navigation.navigate("Modal");
+        }
+      }),
+    []
+  );
+
+  useEffect(() => {
+    let unsub;
+
+    const fetchCards = async () => {
+      unsub = onSnapshot(collection(db, "users"), (snapshot) => {
+        setProfiles(
+          snapshot.docs.filter(doc => doc.id !== user.uid).map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+        );
+      });
+    };
+
+    fetchCards();
+    return unsub;
+  }, []);
+
+  const swipeLeft = async() => {
+
+  }
+
+  const swipeRight = async() => {
+    
+  }
+
+  const swipeTop = async() => {
+    
+  }
+
+  //console.log(profiles)
 
   return (
     <SafeAreaView style={[tw`flex-1`, Platform.OS === "android" ? tw`pt-10` : tw`pt-0`]}>
@@ -66,7 +110,7 @@ const HomeScreen = () => {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Modal")}>
           <Image style={tw`h-14 w-14`} source={require("../logo.png")} />
         </TouchableOpacity>
 
@@ -83,20 +127,24 @@ const HomeScreen = () => {
         <Swiper
           ref={swipeRef}
           containerStyle={{ backgroundColor: "transparent" }}
-          cards={DUMMY_DATA}
+          cards={profiles} //DUMMY_DATA
           stackSize={5}
           cardIndex={0}
           animateCardOpacity
-          backgroundColor=""
+          backgroundColor={"#4FD0E9"}
+          disableBottomSwipe={true}
           //verticalSwipe={false}
-          onSwipedLeft={() => {
-            console.log("Swipe NOPE")
+          onSwipedLeft={(cardIndex) => {
+            console.log("Swipe NOPE");
+            swipeLeft(cardIndex);
           }}
-          onSwipedRight={() => {
-            console.log("Swipe LIKE")
+          onSwipedRight={(cardIndex) => {
+            console.log("Swipe LIKE");
+            swipeRight(cardIndex);
           }}
-          onSwipedTop={() => {
-            console.log("Swipe SUPER LIKE")
+          onSwipedTop={(cardIndex) => {
+            console.log("Swipe SUPER LIKE");
+            swipeTop(cardIndex);
           }}
           overlayLabels={{
             left: {
@@ -127,7 +175,7 @@ const HomeScreen = () => {
               },
             },
           }}
-          renderCard={(card) => (
+          renderCard={(card) => card ? (
             <View
               key={card.id}
               style={tw`relative bg-white h-3/4 rounded-xl`}
@@ -145,14 +193,27 @@ const HomeScreen = () => {
               >
                 <View>
                   <Text style={tw`text-xl font-bold`}>
-                    {card.firstName} {card.lastName}
+                    {card.displayName}
                   </Text>
-                  <Text>{card.occupation}</Text>
+                  <Text>{card.job}</Text>
                 </View>
                 <Text style={tw`text-2xl font-bold`}>
                   {card.age}
                 </Text>
               </View>
+            </View>
+          ) : (
+            <View
+              style={tw`relative bg-white h-3/4 rounded-xl justify-center items-center shadow-xl`}>
+              <Text style={tw`font-bold pb-5`}>
+                No more profiles
+              </Text>
+              <Image
+                style={tw`h-20 w-20`}
+                height={100}
+                width={100}
+                source={{ uri: "https://links.papareact.com/6gb" }}
+              />
             </View>
           )}
         />
@@ -163,14 +224,14 @@ const HomeScreen = () => {
           onPress={() => swipeRef.current.swipeLeft()}
           style={tw`items-center justify-center rounded-full w-16 h-16 bg-red-200`}
         >
-          <Entypo name="cross" size={24} />
+          <Entypo name="cross" size={24} color="red" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => swipeRef.current.swipeRight()}
           style={tw`items-center justify-center rounded-full w-16 h-16 bg-green-200`}
         >
-          <AntDesign name="heart" size={24} />
+          <AntDesign name="heart" size={24} color="green" />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
